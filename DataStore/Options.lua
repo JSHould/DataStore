@@ -127,16 +127,28 @@ function addon:SetupInfoPanel(info, helpFrame)
 	infoText = nil
 end
 
+local altoCategory, datastoreCategory = nil, nil
 function addon:AddOptionCategory(frame, name, parent)
 	-- tiny wrapper to add categories in Blizzard's options panel
 	frame.name = name
 	frame.parent = parent
-	InterfaceOptions_AddCategory(frame)
+	if parent == nil then
+		local category, layout = Settings.RegisterCanvasLayoutCategory(frame, name)
+		if name == "Altoholic" then altoCategory = category end
+		if name == "DataStore" then datastoreCategory = category end
+		Settings.RegisterAddOnCategory(category)
+	else
+		--local category = Settings.GetCategory(parent) -- Isn't working in classic era
+		category = (parent == "Altoholic" and altoCategory) or datastoreCategory
+		local subcategory = Settings.RegisterCanvasLayoutSubcategory(category, frame, name)
+		Settings.RegisterAddOnCategory(subcategory)
+	end
+
 end
 
 function addon:SetupOptions()
 	addon:AddOptionCategory(DataStoreGeneralOptions, addonName)
-	LibStub("LibAboutPanel").new(addonName, addonName);
+	--LibStub("LibAboutPanel").new(addonName, addonName)
 	addon:AddOptionCategory(DataStoreHelp, HELP_LABEL, addonName)	-- more categories will be added as the various modules' OnEnable() get called.
 
 	addon:SetupInfoPanel(help, DataStoreHelp_Text)
